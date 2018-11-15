@@ -1,0 +1,237 @@
+---
+title: "BSc Population Health Dissertation (18/19)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##############
+#             BSc Population Health Dissertation (18/19)
+##############
+
+####################################################################################################################
+
+```{r} 
+####################################################################################################################
+
+# Package Library
+library(data.table)
+library(readr)
+library(foreign)
+library(haven)
+library(grid)
+library(gridExtra)
+library(factoextra)
+library(PerformanceAnalytics)
+library(factoextra)
+```
+
+```{r}
+####################################################################################################################
+
+# Write in 2004-2014 datasets
+hse04 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse04gpa.dta")
+write.csv(hse04, file = "hse04.csv")
+
+hse05 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse05ai.dta")
+write.csv(hse05, file = "hse05.csv")
+
+hse06 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse06ai.dta")
+write.csv(hse06, file = "hse06.csv")
+
+hse07 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse07ai.dta")
+write.csv(hse07, file = "hse07.csv")
+
+hse08 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse08ai.dta")
+write.csv(hse08, file = "hse08.csv")
+
+hse09 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse09ai.dta")
+write.csv(hse09, file = "hse09.csv")
+
+hse10 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse10ai.dta")
+write.csv(hse10, file = "hse10.csv")
+
+hse11 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2011ai.dta")
+write.csv(hse11, file = "hse11.csv")
+
+hse12 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2012ai.dta")
+write.csv(hse12, file = "hse12.csv")
+
+hse13 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2013ai.dta")
+write.csv(hse13, file = "hse13.csv")
+
+hse14 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2014ai.dta")
+write.csv(hse14, file = "hse14.csv")
+```
+
+```{r}
+####################################################################################################################
+
+# Load CSV files
+hse04 <-read.csv("hse04.csv")
+hse05 <-read.csv("hse05.csv")
+hse06 <-read.csv("hse06.csv")
+hse07 <-read.csv("hse07.csv")
+hse08 <-read.csv("hse08.csv")
+hse09 <-read.csv("hse09.csv")
+hse10 <-read.csv("hse10.csv")
+hse11 <-read.csv("hse11.csv")
+hse12 <-read.csv("hse12.csv")
+hse13 <-read.csv("hse13.csv")
+hse14 <-read.csv("hse14.csv")
+```
+
+
+
+##############
+#             Part 1/2: Principal Components Analysis (PCA)
+##############
+
+
+```{r}
+
+####################################################################################################################
+
+# Data Preparation
+#       Extract the variables
+hse04.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urban")
+hse04.mk2 <- hse04[,hse04.pc]
+hse04.mk2$year <- 04
+
+hse05.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urindew")
+hse05.mk2 <- hse05[,hse05.pc]
+hse05.mk2$year <- 05
+
+hse06.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urindew")
+hse06.mk2 <- hse06[,hse06.pc]
+hse06.mk2$year <- 06
+
+hse07.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urindew")
+hse07.mk2 <- hse07[,hse07.pc]
+hse07.mk2$year <- 07
+
+hse08.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urindew")
+hse08.mk2 <- hse08[,hse08.pc]
+hse08.mk2$year <- 08
+
+hse09.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urindew")
+hse09.mk2 <- hse09[,hse09.pc]
+hse09.mk2$year <- 09
+
+hse10.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","age","addnum","urindew")
+hse10.mk2 <- hse10[,hse10.pc]
+hse10.mk2$year <- 10
+
+hse11.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","Age","addnum","urindew")
+hse11.mk2 <- hse11[,hse11.pc]
+colnames(hse11.mk2)[7] <- "age"
+hse11.mk2$year <- 11
+
+hse12.pc <- c("dias1om","dias2om","dias3om","sys1om","sys2om","sys3om","Age","Addnum","urindew")
+hse12.mk2 <- hse12[,hse12.pc]
+colnames(hse12.mk2)[7] <- "age"
+colnames(hse12.mk2)[8] <- "addnum"
+hse12.mk2$year <- 12
+
+hse13.pc <- c("DIAS1OM","DIAS2OM","DIAS3OM","SYS1OM","SYS2OM","SYS3OM","Age","Addnum","urindew")
+hse13.mk2 <- hse13[,hse13.pc]
+hse13.mk2$year <- 13
+colnames(hse13.mk2)[1] <- "dias1om"
+colnames(hse13.mk2)[2] <- "dias2om"
+colnames(hse13.mk2)[3] <- "dias3om"
+colnames(hse13.mk2)[4] <- "sys1om"
+colnames(hse13.mk2)[5] <- "sys2om"
+colnames(hse13.mk2)[6] <- "sys3om"
+colnames(hse13.mk2)[7] <- "age"
+colnames(hse13.mk2)[8] <- "addnum"
+
+hse14.pc <- c("DIAS1OM","DIAS2OM","DIAS3OM","SYS1OM","SYS2OM","SYS3OM","Age90","Addnum")
+hse14.mk2 <- hse14[,hse14.pc]
+hse14.mk2$year <- 14
+colnames(hse14.mk2)[1] <- "dias1om"
+colnames(hse14.mk2)[2] <- "dias2om"
+colnames(hse14.mk2)[3] <- "dias3om"
+colnames(hse14.mk2)[4] <- "sys1om"
+colnames(hse14.mk2)[5] <- "sys2om"
+colnames(hse14.mk2)[6] <- "sys3om"
+colnames(hse14.mk2)[7] <- "age"
+colnames(hse14.mk2)[8] <- "addnum"
+
+#       Row bind the datasets
+hse.mk20 <- rbind(hse04.mk2, hse05.mk2)
+hse.mk20 <- rbind(hse.mk20, hse06.mk2)
+hse.mk20 <- rbind(hse.mk20, hse07.mk2)
+hse.mk20 <- rbind(hse.mk20, hse08.mk2)
+hse.mk20 <- rbind(hse.mk20, hse09.mk2)
+hse.mk20 <- rbind(hse.mk20, hse10.mk2)
+hse.mk20 <- rbind(hse.mk20, hse11.mk2)
+hse.mk20 <- rbind(hse.mk20, hse12.mk2)
+hse.mk20 <- rbind(hse.mk20, hse13.mk2)
+hse.mk20 <- rbind(hse.mk20, hse14.mk2)
+
+#       Keep only the valid children age and blood pressure
+hse.mk20.pc <- which(hse.mk20$age <= 15 & hse.mk20$age >= 2 )
+hse.mk50 <- hse.mk20[hse.mk20.pc,]
+
+hse.mk50.pc <- -c(which(hse.mk50$dias1om < 0 | hse.mk50$dias2om < 0 | hse.mk50$dias3om < 0 |
+                     hse.mk50$sys1om < 0 | hse.mk50$sys1om < 0 | hse.mk50$sys3om < 0))
+hse.mk60 <- hse.mk50[hse.mk50.pc,]
+```
+
+```{r}
+
+####################################################################################################################
+
+# Plot the pairwise correlations
+chart.Correlation(hse.mk60, histogram=TRUE, pch=19)
+
+# and the correlation matrix:
+cor(hse.mk60)
+```
+
+```{r}
+
+####################################################################################################################
+
+# Starting PCA
+pca <- prcomp(hse.mk60[,1:8], scale = TRUE)
+# The eigen values (explained variances) and the scree plot:
+summary(pca)
+pca.mk20 <-  princomp(hse.mk60, cor = T, scores = TRUE)
+fviz_eig(pca.mk20)
+```
+
+```{r}
+
+####################################################################################################################
+
+# Virtualisation
+
+print(pca)
+
+# Plot the coordinates of the first two components
+pca.df <- data.frame(pca.mk20$loadings[,1:2])
+ggplot(pca.df,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(pca.df)),hjust=0, vjust=0)
+
+# How many components do we need?
+biplot(pca.mk20, scale = 0)
+prediction <- data.frame(predict(pca.mk20))
+ggplot(prediction,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(prediction)),hjust=0,
+                                                                          vjust=0)
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
