@@ -11,8 +11,6 @@ knitr::opts_chunk$set(echo = TRUE)
 #             BSc Population Health Dissertation (18/19)
 ##############
 
-####################################################################################################################
-
 ```{r} 
 ###########################################   Package Library  #########################################################
 
@@ -25,6 +23,10 @@ library(gridExtra)
 library(factoextra)
 library(PerformanceAnalytics)
 library(factoextra)
+library(ca)
+library(highcharter)
+library(tidyverse)
+library(rwars)
 ```
 
 ```{r}
@@ -81,7 +83,7 @@ hse15 <-read.csv("hse15.csv")
 ```
 
 ##############
-#             Part 1/3: Data Preparation
+#             Part 1/4: Data Preparation
 ##############
 
 ```{r}
@@ -461,10 +463,44 @@ hse.mk20$dia.hyper3.mk <- NULL
 hse.mk20.pc <- -c(which(hse.mk20$hyper == 0))
 hse.mk50 <- hse.mk20[hse.mk20.pc,]
 hse.mk50$hyper <- NULL
+hse.mk50$sysavg <- NULL
+hse.mk50$diaavg <- NULL
 ```
 
 ##############
-#             Part 2/3: Principal Components Analysis (PCA)
+#             Part 2/4: Current Hypertension Phenomenon Plotting
+##############
+
+```{r}
+prop <- data.frame(table(hse.mk20$year[hse.mk20$hyper == 1]))
+colnames(prop)[1] <- "year"
+colnames(prop)[2] <- "number"
+
+
+prop$color <- NULL
+
+hchart(prop, "line", hcaes(x = year, y = number),
+       color = c("#FAFAFA")) %>% 
+  hc_title(
+    text = "Proportion of <span style=\"color:#e5b13a\"> Children in Hypertension </span> ",
+    useHTML = TRUE) %>% 
+  hc_tooltip(table = TRUE, sort = TRUE) %>% 
+  hc_credits(
+    enabled = TRUE,
+    text = "Source: SWAPI via rwars package",
+    href = "https://swapi.co/") %>% 
+  hc_add_theme(
+    hc_theme_flatdark(
+      chart = list(
+        backgroundColor = "transparent",
+        divBackgroundImage = "http://www.wired.com/images_blogs/underwire/2013/02/xwing-bg.gif"
+      )
+    )
+  )
+```
+
+##############
+#             Part 3/4: Principal Components Analysis (PCA) & Correspondence analysis (CORA) 
 ##############
 
 ```{r}
@@ -478,40 +514,44 @@ cor(hse.mk50)
 ```
 
 ```{r}
+##################################       Principal Components Analysis (PCA)       ######################################
 
-####################################################################################################################
-
-```
-
-```{r}
-
-####################################################################################################################
-
-# Starting PCA
-pca <- prcomp(hse.mk60[,1:8], scale = TRUE)
 # The eigen values (explained variances) and the scree plot:
+pca <-  princomp(na.omit(hse.mk50), cor = T, scores = TRUE)
 summary(pca)
-pca.mk20 <-  princomp(hse.mk60, cor = T, scores = TRUE)
-fviz_eig(pca.mk20)
-```
+fviz_eig(pca)
+# Overall, it seems that we'll need two or three components to account for the variation in the data. 
 
-```{r}
-
-####################################################################################################################
-
-# Virtualisation
-
-print(pca)
-
-# Plot the coordinates of the first two components
-pca.df <- data.frame(pca.mk20$loadings[,1:2])
+# Variables' contribution to the principal components
+pca.df <- data.frame(pca$loadings[,1:2])
 ggplot(pca.df,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(pca.df)),hjust=0, vjust=0)
 
-# How many components do we need?
-biplot(pca.mk20, scale = 0)
-prediction <- data.frame(predict(pca.mk20))
-ggplot(prediction,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(prediction)),hjust=0,
-                                                                          vjust=0)
+# Dimension Reduction
+biplot(pca, scale = 0)
+prediction <- data.frame(predict(pca))
+ggplot(prediction,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(prediction)),hjust=0, vjust=0)
+```
+
+```{r}
+#####################################      Correspondence analysis (CORA)     ############################################
+
+cora <- ca(na.omit(hse.mk50))
+summary(cora)
+plot(cora, contrib = "absolute")
+plot(cora, mass = TRUE, contrib = "absolute", map = "rowgreen", arrows = c(FALSE, TRUE))
+
+# The first dimension explains 37.5% of the inertia. 
+# The 2nd dimension explains a further 21%. 
+# The first two dimensions seem to explain much of the data. 
+```
+
+##############
+#             Part 4/4: The Effect of Urbanisation  --  Propensity Analysis
+##############
+
+```{r}
+############################################      Propensity Analysis      ##############################################
+
 
 ```
 
