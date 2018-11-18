@@ -250,3 +250,134 @@ cora <- ca(na.omit(hse.mk50))
 summary(cora)
 plot(cora, contrib = "absolute")
 plot(cora, mass = TRUE, contrib = "absolute", map = "rowgreen", arrows = c(FALSE, TRUE))
+
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+
+reg <- lm(hyper ~ sex + tenureb + origin + hhsize + addnum + imd + birthwt + frtpor + vegpor + gor + aggr, data=hse.mk85)
+summary(reg)
+
+
+
+############################################      Propensity Analysis      ##############################################
+
+hse.mk60 <- hse.mk20
+hse.mk60$sysavg <- NULL
+hse.mk60$diaavg <- NULL
+
+# Multiple imputation
+hse.mk60.mi <- aregImpute(~ hyper + sex + tenureb + origin + hhsize + addnum + imd + birthwt + 
+                            frtpor + vegpor + gor + aggr + year, data = hse.mk60, n.impute = 5, nk=0)
+# Retrieve the imputed values
+hse.mk60.mi.r <- impute.transcan(hse.mk60.mi, data = hse.mk60, imputation=1, list.out=TRUE, pr=FALSE, check=FALSE)
+
+# Arrange the columns accordingly
+hse.mk85 <- hse.mk60
+hse.mk85$tenureb <- hse.mk60.mi.r$tenureb
+hse.mk85$origin <- hse.mk60.mi.r$origin
+hse.mk85$birthwt <- hse.mk60.mi.r$birthwt
+hse.mk85$frtpor <- hse.mk60.mi.r$frtpor
+hse.mk85$vegpor <- hse.mk60.mi.r$vegpor
+
+# Compute the Propensity scores
+hse.mk85$imd <- ifelse(hse.mk85$imd < 5, 1, 0)
+table(hse.mk85$imd)
+
+reg <- glm(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + frtpor + vegpor + gor + aggr + year, 
+           family=binomial, data=hse.mk85)
+hse.mk85$fit.value <- fitted.values(reg)
+
+# Propensity Scores Matching
+matching.vars <- cbind(hse.mk85$fit.value)
+psm <- Match(Y=hse.mk85$hyper, Tr=hse.mk85$imd, X=matching.vars, Weight = 2, ties = F)
+summary.Match(psm)
+
+
+
+Estimate...  -0.0027211 
+SE.........  0.002516 
+T-stat.....  -1.0815 
+p.val......  0.27946 
+
+Original number of observations..............  45824 
+Original number of treated obs...............  9555 
+Matched number of observations...............  9555 
+Matched number of observations  (unweighted).  9555 
+
+
+
+
+# Balance test
+MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + frtpor + vegpor + gor + aggr + year, 
+             match.out=psm, data=hse.mk85)
+
+# Regression with a matched dataset
+hse.mk90 <- rbind(hse.mk85[psm$index.control,],hse.mk85[psm$index.treated,])
+summary(lm(hyper ~ imd ,data=hse.mk90))
+
+
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+
+
+
+# impulation 方法3：hot deck
+# 化成matrix
+hse.mk60.matrix<-data.matrix(hse.mk60, rownames.force = NA)
+# Cbind两个dataframe，一个是impute，另一个是hse，然后合成的命名为hotdeck
+library(HotDeckImputation)
+hse.mk60.hotdeck<-cbind(impute.SEQ_HD(DATA=hse.mk60.matrix,initialvalues=0, navalues=NA, modifyinplace = FALSE),hse.mk60.matrix)
+
+length(which(is.na(hse.mk60.hotdeck)))
+
+hse.mk85 <- hse.mk60.hotdeck
+
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+reg1 <- lm(hyper~ imd + sex + tenureb + origin + hhsize + addnum + birthwt + frtpor + vegpor + gor + aggr + year, data = hse.mk60)
+summary(reg1)
+# Compute the Propensity scores
+reg <- glm(imd ~ sex + addnum + frtpor + vegpor + aggr + year, 
+           family=binomial, data=hse.mk85)
+hse.mk85$fit.value <- fitted.values(reg)
+
+# Propensity Scores Matching & Average Treatment Effect on Treated
+matching.vars <- cbind(hse.mk85$fit.value)
+psm <- Match(Y=hse.mk85$hyper, Tr=hse.mk85$imd, X=matching.vars, Weight = 2, ties = F)
+summary.Match(psm)
+
+# Balance test
+MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + frtpor + vegpor + gor + aggr + year, 
+             match.out=psm, data=hse.mk85)
+
+# Regression with a matched dataset
+hse.mk90 <- rbind(hse.mk85[psm$index.control,],hse.mk85[psm$index.treated,])
+summary(lm(hyper ~ imd ,data=hse.mk90))
+
+
+
+
+
+
+
+
+
+
