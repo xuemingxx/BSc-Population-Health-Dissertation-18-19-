@@ -372,11 +372,25 @@ MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + frtpor +
 hse.mk90 <- rbind(hse.mk85[psm$index.control,],hse.mk85[psm$index.treated,])
 summary(lm(hyper ~ imd ,data=hse.mk90))
 
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
 
 
+final.model <- lm(hyper ~ imd + sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year,data = hse.mk85)
+summary(final.model)
+library(car)
+vif(final.model)
+
+length(is.na(hse.mk85))
 
 
-
+hse.mk20$dias3om <- ifelse(hse.mk20$dias3om < 0 | hse.mk20$dias3om > 200, NA, hse.mk20$dias3om)
+x <- hse.mk20$dias3om
+range(hse.mk20$dias3om, na.rm = T)
+hist(x, freq = FALSE)
 
 
 
