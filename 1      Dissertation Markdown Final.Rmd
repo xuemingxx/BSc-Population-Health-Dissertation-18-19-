@@ -366,7 +366,7 @@ range(hse.mk20$vegpor, na.rm = T)
 
 #   Calculate .05 and .95 quantiles of the systolic and diastolic bp for each of the three age groups, 
 #   if the child's systolic / diastolic bp is lower than .05 or higher than .95 age group's threshold, 
-#   the child is classified as hypertension
+#   the child is classified as hypertensive
 
 
 # systolic bp comparison for age group 1
@@ -535,7 +535,7 @@ ggplot(prediction,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(la
 ```
 
 ```{r}
-#####################################      Correspondence analysis (CORA)     ############################################
+#####################################      Correspondence Analysis (CORA)     ############################################
 
 cora <- ca(na.omit(hse.mk50))
 summary(cora)
@@ -563,7 +563,8 @@ hse.mk60.mi <- aregImpute(~ sex + tenureb + origin + hhsize + addnum + imd + bir
                           + aggr, data = hse.mk60, n.impute = 5, nk=0)
 # Retrieve the imputed values
 hse.mk60.mi.r <- impute.transcan(hse.mk60.mi, data = hse.mk60, imputation=1, list.out=TRUE, pr=FALSE, check=FALSE)
-# arrange the columns accordingly
+
+# Arrange the columns accordingly
 hse.mk85 <- hse.mk60
 hse.mk85$tenureb <- hse.mk60.mi.r$tenureb
 hse.mk85$origin <- hse.mk60.mi.r$origin
