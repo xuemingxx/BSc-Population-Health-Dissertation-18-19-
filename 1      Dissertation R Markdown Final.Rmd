@@ -29,6 +29,7 @@ library(tidyverse)
 library(rwars)
 library(Matching)
 library(Hmisc)
+library(dplyr)
 ```
 
 ```{r}
@@ -515,27 +516,13 @@ prop <- data.frame(table(hse.mk20$year[hse.mk20$hyper == 1]))
 colnames(prop)[1] <- "year"
 colnames(prop)[2] <- "number"
 
+prop$group <- ifelse(prop$year %in% c(5:8), 1, 2)
 
-prop$color <- NULL
-
-hchart(prop, "line", hcaes(x = year, y = number),
-       color = c("#FAFAFA")) %>% 
-  hc_title(
-    text = "Proportion of <span style=\"color:#e5b13a\"> Children in Hypertension </span> ",
-    useHTML = TRUE) %>% 
-  hc_tooltip(table = TRUE, sort = TRUE) %>% 
-  hc_credits(
-    enabled = TRUE,
-    text = "Source: SWAPI via rwars package",
-    href = "https://swapi.co/") %>% 
-  hc_add_theme(
-    hc_theme_flatdark(
-      chart = list(
-        backgroundColor = "transparent",
-        divBackgroundImage = "http://www.wired.com/images_blogs/underwire/2013/02/xwing-bg.gif"
-      )
-    )
-  )
+ggplot(data = prop, mapping = aes(x = year, y = number, group = group)) + 
+  geom_line(color="#E69F00") +
+  geom_point(color="#E69F00", size=2) +
+  labs(x="Number of Hypertensive Children",y="Years",title = "Number of Hypertensive Children across Years") +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ##############
@@ -579,8 +566,8 @@ summary(cora)
 plot(cora, contrib = "absolute")
 plot(cora, mass = TRUE, contrib = "absolute", map = "rowgreen", arrows = c(FALSE, TRUE))
 
-# The first dimension explains 37.5% of the inertia. 
-# The 2nd dimension explains a further 21%. 
+# The first dimension explains 41% of the inertia. 
+# The 2nd dimension explains a further 22%. 
 # The first two dimensions seem to explain much of the data. 
 ```
 
@@ -596,7 +583,7 @@ hse.mk60$sysavg <- NULL
 hse.mk60$diaavg <- NULL
 
 # Multiple imputation
-set.seed(1)
+set.seed(1029)
 hse.mk60.mi <- aregImpute(~ hyper + sex + tenureb + origin + hhsize + addnum + imd + birthwt + 
                             porftvg + gor + aggr + year, data = hse.mk60, n.impute = 50, nk=0)
 # Retrieve the imputed values
