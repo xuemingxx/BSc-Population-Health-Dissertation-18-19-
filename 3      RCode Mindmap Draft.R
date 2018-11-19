@@ -379,7 +379,7 @@ summary(lm(hyper ~ imd ,data=hse.mk90))
 ####################################################################################################################
 
 
-final.model <- lm(hyper ~ imd + sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year,data = hse.mk85)
+final.model <- lm(hyper ~ imd + sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year,data = hse.mk60)
 summary(final.model)
 library(car)
 vif(final.model)
@@ -391,6 +391,33 @@ hse.mk20$dias3om <- ifelse(hse.mk20$dias3om < 0 | hse.mk20$dias3om > 200, NA, hs
 x <- hse.mk20$dias3om
 range(hse.mk20$dias3om, na.rm = T)
 hist(x, freq = FALSE)
+
+
+
+#       Remove rows with NAs as the missing value stands for invalid measurements rather than non-response
+hse.mk20 <- hse.mk20[complete.cases(hse.mk20), ]
+
+
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+
+table(hse.mk90$imd)
+library(twang)
+set.seed(1)
+
+mnps.hse.mk90 <- mnps(as.factor(imd) ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year,
+                data = hse.mk90,estimand = "ATE",verbose = FALSE,stop.method = c("es.mean", "ks.mean"), n.trees = 3000)
+plot(mnps.hse.mk90, plots = 1)
+plot(mnps.hse.mk90, plots = 2, subset = "es.mean")
+plot(mnps.hse.mk90, plots = 3)
+plot(mnps.hse.mk90, plots = 3, pairwiseMax = FALSE, figureRows = 3)
+plot(mnps.hse.mk90, plots = 4)
+
 
 
 

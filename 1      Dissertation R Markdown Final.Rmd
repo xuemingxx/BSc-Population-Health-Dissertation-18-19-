@@ -303,7 +303,7 @@ hse15.mk2$Ag015g4 <- NULL
 ```
 
 ```{r}
-###############################      Data Preparation  --  Row bind the datasets      ##############################
+###############################      Data Preparation  --  Merge (Row bind) the datasets      ##############################
 
 hse.mk20 <- rbind(hse05.mk2, hse06.mk2)
 hse.mk20 <- rbind(hse.mk20, hse07.mk2)
@@ -318,36 +318,94 @@ hse.mk20 <- rbind(hse.mk20, hse15.mk2)
 ```
 
 ```{r}
-###############################      Data Preparation  --  Average the BP for each row      ##############################
+##########################      Data Preparation  --  Convert the inapplicable cases to NAs      ##############################
 
-#       Looking into the distribution of measurements
+#       As some of the observations are recorded as negative number or huge number in inapplicable cases in the datasets
+#       This step ensures those cases are marked as NAs rather than continuous number
+
+colnames(hse.mk20)
+range(hse.mk20$sex)
+range(hse.mk20$tenureb)
+range(hse.mk20$origin)
+range(hse.mk20$hhsize)
+range(hse.mk20$addnum)
+range(hse.mk20$imd)
+range(hse.mk20$birthwt, na.rm = T)
+range(hse.mk20$porftvg, na.rm = T)
+range(hse.mk20$gor)
+range(hse.mk20$year)
+range(hse.mk20$aggr)
+range(hse.mk20$sys1om)
+range(hse.mk20$sys2om)
+range(hse.mk20$sys3om)
+range(hse.mk20$dias1om)
+range(hse.mk20$dias2om)
+range(hse.mk20$dias3om)
+# tenureb, origin, birthwt, porftvg, & six BP measurements has negative values (inapplicable cases)
+# birthwt, porftvg has NA values originally which require to be imputed later.
+
+
+#       Covert the inapplicable cases to NAs
+
+hse.mk20$tenureb <- ifelse(hse.mk20$tenureb < 0, NA, hse.mk20$tenureb)
+hse.mk20$origin <- ifelse(hse.mk20$origin < 0, NA, hse.mk20$origin)
+hse.mk20$birthwt <- ifelse(hse.mk20$birthwt < 0, NA, hse.mk20$birthwt)
+hse.mk20$porftvg <- ifelse(hse.mk20$porftvg < 0, NA, hse.mk20$porftvg)
 
 hse.mk20$sys1om <- ifelse(hse.mk20$sys1om < 0 | hse.mk20$sys1om > 200, NA, hse.mk20$sys1om)
+hse.mk20$sys2om <- ifelse(hse.mk20$sys2om < 0 | hse.mk20$sys2om > 200, NA, hse.mk20$sys2om)
+hse.mk20$sys3om <- ifelse(hse.mk20$sys3om < 0 | hse.mk20$sys3om > 200, NA, hse.mk20$sys3om)
+hse.mk20$dias1om <- ifelse(hse.mk20$dias1om < 0 | hse.mk20$dias1om > 200, NA, hse.mk20$dias1om)
+hse.mk20$dias2om <- ifelse(hse.mk20$dias2om < 0 | hse.mk20$dias2om > 200, NA, hse.mk20$dias2om)
+hse.mk20$dias3om <- ifelse(hse.mk20$dias3om < 0 | hse.mk20$dias3om > 200, NA, hse.mk20$dias3om)
+
+#     Last check
+
+colnames(hse.mk20)
+range(hse.mk20$sex)
+range(hse.mk20$tenureb, na.rm = T)
+range(hse.mk20$origin, na.rm = T)
+range(hse.mk20$hhsize)
+range(hse.mk20$addnum)
+range(hse.mk20$imd)
+range(hse.mk20$birthwt, na.rm = T)
+range(hse.mk20$porftvg, na.rm = T)
+range(hse.mk20$gor)
+range(hse.mk20$year)
+range(hse.mk20$aggr)
+range(hse.mk20$sys1om, na.rm = T)
+range(hse.mk20$sys2om, na.rm = T)
+range(hse.mk20$sys3om, na.rm = T)
+range(hse.mk20$dias1om, na.rm = T)
+range(hse.mk20$dias2om, na.rm = T)
+range(hse.mk20$dias3om, na.rm = T)
+```
+
+```{r}
+###############################      Data Preparation  --  Average the BP for each row      ##############################
+
+#       Looking into the distribution of BP measurements
+
 x1 <- hse.mk20$sys1om
 range(hse.mk20$sys1om, na.rm = T)
 hist(x1, freq = FALSE)
 
-hse.mk20$sys2om <- ifelse(hse.mk20$sys2om < 0 | hse.mk20$sys2om > 200, NA, hse.mk20$sys2om)
 x2 <- hse.mk20$sys2om
 range(hse.mk20$sys2om, na.rm = T)
 hist(x2, freq = FALSE)
 
-hse.mk20$sys3om <- ifelse(hse.mk20$sys3om < 0 | hse.mk20$sys3om > 200, NA, hse.mk20$sys3om)
 x3 <- hse.mk20$sys3om
 range(hse.mk20$sys3om, na.rm = T)
 hist(x3, freq = FALSE)
 
-hse.mk20$dias1om <- ifelse(hse.mk20$dias1om < 0 | hse.mk20$dias1om > 200, NA, hse.mk20$dias1om)
 x4 <- hse.mk20$dias1om
 range(hse.mk20$dias1om, na.rm = T)
 hist(x4, freq = FALSE)
 
-hse.mk20$dias2om <- ifelse(hse.mk20$dias2om < 0 | hse.mk20$dias2om > 200, NA, hse.mk20$dias2om)
 x5 <- hse.mk20$dias2om
 range(hse.mk20$dias2om, na.rm = T)
 hist(x5, freq = FALSE)
 
-hse.mk20$dias3om <- ifelse(hse.mk20$dias3om < 0 | hse.mk20$dias3om > 200, NA, hse.mk20$dias3om)
 x6 <- hse.mk20$dias3om
 range(hse.mk20$dias3om, na.rm = T)
 hist(x6, freq = FALSE)
@@ -370,38 +428,10 @@ hse.mk20$dias3om <- NULL
 ```
 
 ```{r}
-#############################      Data Preparation  --  Convert the invalid value to NAs      ############################
-
-hse.mk20$sysavg <- ifelse(hse.mk20$sysavg < 0, NA, hse.mk20$sysavg)
-length(which(hse.mk20$sysavg < 0))
-range(hse.mk20$sysavg, na.rm = T)
-
-hse.mk20$diaavg <- ifelse(hse.mk20$diaavg < 0, NA, hse.mk20$diaavg)
-length(which(hse.mk20$diaavg < 0))
-range(hse.mk20$diaavg, na.rm = T)
-
-hse.mk20$tenureb <- ifelse(hse.mk20$tenureb < 0, NA, hse.mk20$tenureb)
-length(which(hse.mk20$tenureb < 0))
-range(hse.mk20$tenureb, na.rm = T)
-
-hse.mk20$origin <- ifelse(hse.mk20$origin < 0, NA, hse.mk20$origin)
-length(which(hse.mk20$origin < 0))
-range(hse.mk20$origin, na.rm = T)
-
-hse.mk20$birthwt <- ifelse(hse.mk20$birthwt < 0, NA, hse.mk20$birthwt)
-length(which(hse.mk20$birthwt < 0))
-range(hse.mk20$birthwt, na.rm = T)
-
-hse.mk20$porftvg <- ifelse(hse.mk20$porftvg < 0, NA, hse.mk20$porftvg)
-length(which(hse.mk20$porftvg < 0))
-range(hse.mk20$porftvg, na.rm = T)
-```
-
-```{r}
 #############################      Data Preparation  --  Get the hypertensive group      ############################
 
-#   Calculate .05 and .95 quantiles of the systolic and diastolic bp for each of the three age groups, 
-#   if the child's systolic / diastolic bp is lower than .05 or higher than .95 age group's threshold, 
+#   Calculate .95 quantiles of the systolic and diastolic bp for each of the three age groups, 
+#   if the child's systolic / diastolic bp is higher than .95 age group's threshold, 
 #   the child is classified as hypertensive
 
 
@@ -409,56 +439,50 @@ range(hse.mk20$porftvg, na.rm = T)
 hse.mk20$sys.hyper1 <- NA
 hse.mk20$sys.hyper1 <- ifelse(hse.mk20$aggr == 1, hse.mk20$sysavg, NA)
 range(hse.mk20$sys.hyper1, na.rm = T)
-quantile(hse.mk20$sys.hyper1, c(.05, .95), na.rm = T)
+quantile(hse.mk20$sys.hyper1, .95, na.rm = T)
 hse.mk20$sys.hyper1.mk <- NA
-hse.mk20$sys.hyper1.mk <- ifelse(hse.mk20$sys.hyper1 <= quantile(hse.mk20$sys.hyper1, c(.05, .95), na.rm = T)[1]
-                               | hse.mk20$sys.hyper1 >= quantile(hse.mk20$sys.hyper1, c(.05, .95), na.rm = T)[2], 1, 0)
+hse.mk20$sys.hyper1.mk <- ifelse(hse.mk20$sys.hyper1 >= quantile(hse.mk20$sys.hyper1, .95, na.rm = T)[1], 1, 0)
 length(which(hse.mk20$sys.hyper1.mk == 1 ))
 #                               group 2
 hse.mk20$sys.hyper2 <- NA
 hse.mk20$sys.hyper2 <- ifelse(hse.mk20$aggr == 2, hse.mk20$sysavg, NA)
 range(hse.mk20$sys.hyper2, na.rm = T) 
-quantile(hse.mk20$sys.hyper2, c(.05, .95), na.rm = T)
+quantile(hse.mk20$sys.hyper2, .95, na.rm = T)
 hse.mk20$sys.hyper2.mk <- NA
-hse.mk20$sys.hyper2.mk <- ifelse(hse.mk20$sys.hyper2 <= quantile(hse.mk20$sys.hyper2, c(.05, .95), na.rm = T)[1]
-                               | hse.mk20$sys.hyper2 >= quantile(hse.mk20$sys.hyper2, c(.05, .95), na.rm = T)[2], 1, 0)
+hse.mk20$sys.hyper2.mk <- ifelse(hse.mk20$sys.hyper2 >= quantile(hse.mk20$sys.hyper2, .95, na.rm = T)[1], 1, 0)
 length(which(hse.mk20$sys.hyper2.mk == 1 ))
 #                               group 3
 hse.mk20$sys.hyper3 <- NA
 hse.mk20$sys.hyper3 <- ifelse(hse.mk20$aggr == 3, hse.mk20$sysavg, NA)
 range(hse.mk20$sys.hyper3, na.rm = T) 
-quantile(hse.mk20$sys.hyper3, c(.05, .95), na.rm = T)
+quantile(hse.mk20$sys.hyper3, .95, na.rm = T)
 hse.mk20$sys.hyper3.mk <- NA
-hse.mk20$sys.hyper3.mk <- ifelse(hse.mk20$sys.hyper3 <= quantile(hse.mk20$sys.hyper3, c(.05, .95), na.rm = T)[1]
-                               | hse.mk20$sys.hyper3 >= quantile(hse.mk20$sys.hyper3, c(.05, .95), na.rm = T)[2], 1, 0)
+hse.mk20$sys.hyper3.mk <- ifelse(hse.mk20$sys.hyper3 >= quantile(hse.mk20$sys.hyper3, .95, na.rm = T)[1], 1, 0)
 length(which(hse.mk20$sys.hyper3.mk == 1 ))
 
 # diastolic bp comparison for age group 1
 hse.mk20$dia.hyper1 <- NA
 hse.mk20$dia.hyper1 <- ifelse(hse.mk20$aggr == 1, hse.mk20$diaavg, NA)
 range(hse.mk20$dia.hyper1, na.rm = T) 
-quantile(hse.mk20$dia.hyper1, c(.05, .95), na.rm = T)
+quantile(hse.mk20$dia.hyper1, .95, na.rm = T)
 hse.mk20$dia.hyper1.mk <- NA
-hse.mk20$dia.hyper1.mk <- ifelse(hse.mk20$dia.hyper1 <= quantile(hse.mk20$dia.hyper1, c(.05, .95), na.rm = T)[1]
-                               | hse.mk20$dia.hyper1 >= quantile(hse.mk20$dia.hyper1, c(.05, .95), na.rm = T)[2], 1, 0)
+hse.mk20$dia.hyper1.mk <- ifelse(hse.mk20$dia.hyper1 >= quantile(hse.mk20$dia.hyper1, .95, na.rm = T)[1], 1, 0)
 length(which(hse.mk20$dia.hyper1.mk == 1 ))
 #                               group 2
 hse.mk20$dia.hyper2 <- NA
 hse.mk20$dia.hyper2 <- ifelse(hse.mk20$aggr == 2, hse.mk20$diaavg, NA)
 range(hse.mk20$dia.hyper2, na.rm = T) 
-quantile(hse.mk20$dia.hyper2, c(.05, .95), na.rm = T)
+quantile(hse.mk20$dia.hyper2, .95, na.rm = T)
 hse.mk20$dia.hyper2.mk <- NA
-hse.mk20$dia.hyper2.mk <- ifelse(hse.mk20$dia.hyper2 <= quantile(hse.mk20$dia.hyper2, c(.05, .95), na.rm = T)[1]
-                               | hse.mk20$dia.hyper2 >= quantile(hse.mk20$dia.hyper2, c(.05, .95), na.rm = T)[2], 1, 0)
+hse.mk20$dia.hyper2.mk <- ifelse(hse.mk20$dia.hyper2 >= quantile(hse.mk20$dia.hyper2, .95, na.rm = T)[1], 1, 0)
 length(which(hse.mk20$dia.hyper2.mk == 1 ))
 #                               group 3
 hse.mk20$dia.hyper3 <- NA
 hse.mk20$dia.hyper3 <- ifelse(hse.mk20$aggr == 3, hse.mk20$diaavg, NA)
 range(hse.mk20$dia.hyper3, na.rm = T) 
-quantile(hse.mk20$dia.hyper3, c(.05, .95), na.rm = T)
+quantile(hse.mk20$dia.hyper3, .95, na.rm = T)
 hse.mk20$dia.hyper3.mk <- NA
-hse.mk20$dia.hyper3.mk <- ifelse(hse.mk20$dia.hyper3 <= quantile(hse.mk20$dia.hyper3, c(.05, .95), na.rm = T)[1]
-                               | hse.mk20$dia.hyper3 >= quantile(hse.mk20$dia.hyper3, c(.05, .95), na.rm = T)[2], 1, 0)
+hse.mk20$dia.hyper3.mk <- ifelse(hse.mk20$dia.hyper3 >= quantile(hse.mk20$dia.hyper3, .95, na.rm = T)[1], 1, 0)
 length(which(hse.mk20$dia.hyper3.mk == 1 ))
 
 
@@ -477,11 +501,8 @@ hse.mk20$hyper <- NA
 hse.mk20$hyper <- ifelse(hse.mk20$sys.hyper1.mk == 1 | hse.mk20$sys.hyper2.mk == 1 | hse.mk20$sys.hyper3.mk == 1 
                        | hse.mk20$dia.hyper1.mk == 1 | hse.mk20$dia.hyper2.mk == 1 | hse.mk20$dia.hyper3.mk == 1 ,1, 0) 
 length(which(hse.mk20$hyper == 1 ))
-```
 
-```{r}
-########################   Data Preparation  --  Keep only the variabls to use in the following step      ###################
-
+#       Delete used rows
 hse.mk20$sys.hyper1 <- NULL
 hse.mk20$sys.hyper1.mk <- NULL
 hse.mk20$sys.hyper2 <- NULL
@@ -495,15 +516,43 @@ hse.mk20$dia.hyper2 <- NULL
 hse.mk20$dia.hyper2.mk <- NULL
 hse.mk20$dia.hyper3 <- NULL
 hse.mk20$dia.hyper3.mk <- NULL
-
-#       hse.mk20 is the dataset for all children with regardless of whether they are hypertensive or not
-#       hse.mk50 contains only the hypertensive children
-hse.mk20.pc <- -c(which(hse.mk20$hyper == 0))
-hse.mk50 <- hse.mk20[hse.mk20.pc,]
-hse.mk50$hyper <- NULL
-hse.mk50$sysavg <- NULL
-hse.mk50$diaavg <- NULL
 ```
+
+```{r}
+#############################      Data Preparation  --  Multiple Imputation     ############################
+
+hse.mk50 <- hse.mk20
+
+# Multiple imputation
+set.seed(1)
+hse.mk50.mi <- aregImpute(~ hyper + sex + tenureb + origin + hhsize + addnum + imd + birthwt + 
+                            porftvg + gor + aggr + year + sysavg + diaavg, data = hse.mk50, n.impute = 5, nk=0)
+# Retrieve the imputed values
+hse.mk50.mi.r <- impute.transcan(hse.mk50.mi, data = hse.mk50, imputation=1, list.out=TRUE, pr=FALSE, check=FALSE)
+
+# Arrange the columns accordingly
+hse.mk60 <- hse.mk50
+hse.mk60$tenureb <- hse.mk50.mi.r$tenureb
+hse.mk60$origin <- hse.mk50.mi.r$origin
+hse.mk60$birthwt <- hse.mk50.mi.r$birthwt
+hse.mk60$porftvg <- hse.mk50.mi.r$porftvg
+```
+
+```{r}
+####################   Data Preparation  --  Subset the hypertensive group for the clustering analysis      ##################
+
+#       hse.mk60 is the dataset for all children with regardless of whether they are hypertensive or not
+#       hse.mk85 contains only the hypertensive children
+
+hse.mk60.pc <- -c(which(hse.mk60$hyper == 0))
+hse.mk85 <- hse.mk60[hse.mk60.pc,]
+hse.mk85$hyper <- NULL
+hse.mk85$sysavg <- NULL
+hse.mk85$diaavg <- NULL
+hse.mk85$sysavg <- NULL
+hse.mk85$diaavg <- NULL
+```
+
 
 ##############
 #             Part 2/4: Current Hypertension Phenomenon Plotting
@@ -512,7 +561,7 @@ hse.mk50$diaavg <- NULL
 ```{r}
 ##################################       Current Hypertension Phenomenon Plotting       ######################################
 
-prop <- data.frame(table(hse.mk20$year[hse.mk20$hyper == 1]))
+prop <- data.frame(table(hse.mk60$year[hse.mk60$hyper == 1]))
 colnames(prop)[1] <- "year"
 colnames(prop)[2] <- "number"
 
@@ -533,17 +582,17 @@ ggplot(data = prop, mapping = aes(x = year, y = number, group = group)) +
 ################################       Pairwise Correlations & Correlation Matrix       ################################
 
 # Plot the pairwise correlations
-chart.Correlation(hse.mk50, histogram=TRUE, pch=19)
+chart.Correlation(hse.mk85, histogram=TRUE, pch=19)
 
 # and the correlation matrix:
-cor(hse.mk50)
+cor(hse.mk85)
 ```
 
 ```{r}
 ##################################       Principal Components Analysis (PCA)       ######################################
 
 # The eigen values (explained variances) and the scree plot:
-pca <-  princomp(na.omit(hse.mk50), cor = T, scores = TRUE)
+pca <-  princomp(na.omit(hse.mk85), cor = T, scores = TRUE)
 summary(pca)
 fviz_eig(pca)
 # Overall, it seems that we'll need two or three components to account for the variation in the data. 
@@ -561,13 +610,13 @@ ggplot(prediction,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(la
 ```{r}
 #####################################      Correspondence Analysis (CORA)     ############################################
 
-cora <- ca(na.omit(hse.mk50))
+cora <- ca(na.omit(hse.mk85))
 summary(cora)
 plot(cora, contrib = "absolute")
 plot(cora, mass = TRUE, contrib = "absolute", map = "rowgreen", arrows = c(FALSE, TRUE))
 
-# The first dimension explains 41% of the inertia. 
-# The 2nd dimension explains a further 22%. 
+# The first dimension explains 44% of the inertia. 
+# The 2nd dimension explains a further 21.4%. 
 # The first two dimensions seem to explain much of the data. 
 ```
 
@@ -578,48 +627,31 @@ plot(cora, mass = TRUE, contrib = "absolute", map = "rowgreen", arrows = c(FALSE
 ```{r}
 ############################################      Propensity Analysis      ##############################################
 
-hse.mk60 <- hse.mk20
-hse.mk60$sysavg <- NULL
-hse.mk60$diaavg <- NULL
+set.seed(11)
 
-# Multiple imputation
-set.seed(1029)
-hse.mk60.mi <- aregImpute(~ hyper + sex + tenureb + origin + hhsize + addnum + imd + birthwt + 
-                            porftvg + gor + aggr + year, data = hse.mk60, n.impute = 50, nk=0)
-# Retrieve the imputed values
-hse.mk60.mi.r <- impute.transcan(hse.mk60.mi, data = hse.mk60, imputation=1, list.out=TRUE, pr=FALSE, check=FALSE)
-
-# Arrange the columns accordingly
-hse.mk85 <- hse.mk60
-hse.mk85$tenureb <- hse.mk60.mi.r$tenureb
-hse.mk85$origin <- hse.mk60.mi.r$origin
-hse.mk85$birthwt <- hse.mk60.mi.r$birthwt
-hse.mk85$porftvg <- hse.mk60.mi.r$porftvg
-
-hse.mk85$imd <- ifelse(hse.mk85$imd == 1, 1, 
-                       ifelse(hse.mk85$imd == 5, 0, NA))
-table(hse.mk85$imd)
-
-hse.mk85.pc <- -c(which(is.na(hse.mk85$imd)))
-hse.mk85 <- hse.mk85[hse.mk85.pc,]
+hse.mk90 <- hse.mk60
+hse.mk90$imd <- ifelse(hse.mk90$imd == 1, 1, 
+                       ifelse(hse.mk90$imd == 5, 0, NA))
+table(hse.mk90$imd)
+hse.mk90 <- hse.mk90[complete.cases(hse.mk90), ]
 
 # Compute the Propensity scores
-reg <- glm(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year, 
-                                                family=binomial, data=hse.mk85)
-hse.mk85$fit.value <- fitted.values(reg)
+reg <- glm(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year + hyper + sysavg + diaavg, 
+                                                family=binomial, data=hse.mk90)
+hse.mk90$fit.value <- fitted.values(reg)
 
 # Propensity Scores Matching & Average Treatment Effect on Treated
-matching.vars <- cbind(hse.mk85$fit.value)
-psm <- Match(Y=hse.mk85$hyper, Tr=hse.mk85$imd, X=matching.vars, Weight = 2, ties = F)
+matching.vars <- cbind(hse.mk90$fit.value)
+psm <- Match(Y=hse.mk90$hyper, Tr=hse.mk90$imd, X=matching.vars, Weight = 2, ties = F)
 summary.Match(psm)
 
 # Balance test
 MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year, 
-             match.out=psm, data=hse.mk85)
+             match.out=psm, data=hse.mk90)
 
 # Regression with a matched dataset
-hse.mk90 <- rbind(hse.mk85[psm$index.control,],hse.mk85[psm$index.treated,])
-summary(lm(hyper ~ imd ,data=hse.mk90))
+hse.mk.FX <- rbind(hse.mk90[psm$index.control,],hse.mk90[psm$index.treated,])
+summary(lm(hyper ~ imd ,data=hse.mk.FX))
 ```
 
 
