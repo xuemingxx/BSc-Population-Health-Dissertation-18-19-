@@ -1,0 +1,680 @@
+---
+title: "BSc Population Health Dissertation (18/19)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##############
+#             BSc Population Health Dissertation (18/19)
+##############
+
+```{r} 
+###########################################   Package Library  #########################################################
+
+library(data.table)
+library(readr)
+library(foreign)
+library(haven)
+library(grid)
+library(gridExtra)
+library(factoextra)
+library(PerformanceAnalytics)
+library(factoextra)
+library(ca)
+library(highcharter)
+library(tidyverse)
+library(rwars)
+library(Matching)
+library(Hmisc)
+library(dplyr)
+```
+
+```{r}
+#################################      Write in 2005-2015 datasets      ###############################################
+
+hse05 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse05ai.dta")
+write.csv(hse05, file = "hse05.csv")
+
+hse06 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse06ai.dta")
+write.csv(hse06, file = "hse06.csv")
+
+hse07 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse07ai.dta")
+write.csv(hse07, file = "hse07.csv")
+
+hse08 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse08ai.dta")
+write.csv(hse08, file = "hse08.csv")
+
+hse09 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse09ai.dta")
+write.csv(hse09, file = "hse09.csv")
+
+hse10 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse10ai.dta")
+write.csv(hse10, file = "hse10.csv")
+
+hse11 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2011ai.dta")
+write.csv(hse11, file = "hse11.csv")
+
+hse12 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2012ai.dta")
+write.csv(hse12, file = "hse12.csv")
+
+hse13 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2013ai.dta")
+write.csv(hse13, file = "hse13.csv")
+
+hse14 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2014ai.dta")
+write.csv(hse14, file = "hse14.csv")
+
+hse15 = read_dta("/Users/vincentmay/Desktop/Dissertation/Codes/dataset/hse2015ai.dta")
+write.csv(hse15, file = "hse15.csv")
+```
+
+```{r}
+#############################################     Load CSV files     #####################################################
+
+hse05 <-read.csv("hse05.csv")
+hse06 <-read.csv("hse06.csv")
+hse07 <-read.csv("hse07.csv")
+hse08 <-read.csv("hse08.csv")
+hse09 <-read.csv("hse09.csv")
+hse10 <-read.csv("hse10.csv")
+hse11 <-read.csv("hse11.csv")
+hse12 <-read.csv("hse12.csv")
+hse13 <-read.csv("hse13.csv")
+hse14 <-read.csv("hse14.csv")
+hse15 <-read.csv("hse15.csv")
+```
+
+##############
+#             Part 1/4: Data Preparation
+##############
+
+```{r}
+###############################      Data Preparation  --  Get variables needed      ##############################
+
+#         In this section, variables in interest are selected.
+#         Children are filtered from the datasets by "ag215g2", which is further converted to three age groups
+
+hse05.pc <- c("sys1om","dias1om","sex","tenureb","ag215g2","ethinda","hhsize","addnum","imd2004",
+              "birthwt","porftvg","gor","sys2om","sys3om","dias2om","dias3om")
+hse05.mk2 <- hse05[,hse05.pc]
+colnames(hse05.mk2)[6] <- "origin"
+colnames(hse05.mk2)[9] <- "imd"
+hse05.mk2$year <- 05
+hse05.mk2$aggr <- ifelse(hse05.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse05.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse05.mk2$ag215g2 > 0, 1,0)))
+hse05.mk2$porftvg <- ifelse(hse05.mk2$porftvg > 5, 6, hse05.mk2$porftvg)
+hse05.2 <- -c(which(hse05.mk2$aggr == 0))
+hse05.mk2 <- hse05.mk2[hse05.2,]
+hse05.mk2$ag215g2 <- NULL
+
+
+hse06.pc <- c("sys1om","dias1om","sex","tenureb","ag215g2","ethinda","hhsize","addnum","imd2004",
+              "birthwt","porftvg","gor06","sys2om","sys3om","dias2om","dias3om")
+hse06.mk2 <- hse06[,hse06.pc]
+colnames(hse06.mk2)[6] <- "origin"
+colnames(hse06.mk2)[9] <- "imd"
+colnames(hse06.mk2)[12] <- "gor"
+hse06.mk2$year <- 06
+hse06.mk2$aggr <- ifelse(hse06.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse06.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse06.mk2$ag215g2 > 0, 1,0)))
+hse06.mk2$porftvg <- ifelse(hse06.mk2$porftvg > 5, 6, hse06.mk2$porftvg)
+hse06.2 <- -c(which(hse06.mk2$aggr == 0))
+hse06.mk2 <- hse06.mk2[hse06.2,]
+hse06.mk2$ag215g2 <- NULL
+
+
+hse07.pc <- c("sys1om","dias1om","sex","tenureb","ag215g2","ethinda","hhsized","addnum","imd2007",
+              "birthwt","porftvg","gor07","sys2om","sys3om","dias2om","dias3om")
+hse07.mk2 <- hse07[,hse07.pc]
+colnames(hse07.mk2)[6] <- "origin"
+colnames(hse07.mk2)[7] <- "hhsize"
+colnames(hse07.mk2)[9] <- "imd"
+colnames(hse07.mk2)[12] <- "gor"
+hse07.mk2$year <- 07
+hse07.mk2$aggr <- ifelse(hse07.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse07.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse07.mk2$ag215g2 > 0, 1,0)))
+hse07.mk2$porftvg <- ifelse(hse07.mk2$porftvg > 5, 6, hse07.mk2$porftvg)
+hse07.2 <- -c(which(hse07.mk2$aggr == 0))
+hse07.mk2 <- hse07.mk2[hse07.2,]
+hse07.mk2$ag215g2 <- NULL
+
+
+hse08.pc <- c("sys1om","dias1om","sex","tenureb","ag215g2","origin","hhsize","addnum","qimd",
+              "birthwt","porftvg","GOR","sys2om","sys3om","dias2om","dias3om")
+hse08.mk2 <- hse08[,hse08.pc]
+colnames(hse08.mk2)[9] <- "imd"
+colnames(hse08.mk2)[12] <- "gor"
+hse08.mk2$year <- 08
+hse08.mk2$aggr <- ifelse(hse08.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse08.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse08.mk2$ag215g2 > 0, 1,0)))
+hse08.mk2$porftvg <- ifelse(hse08.mk2$porftvg > 5, 6, hse08.mk2$porftvg)
+hse08.2 <- -c(which(hse08.mk2$aggr == 0))
+hse08.mk2 <- hse08.mk2[hse08.2,]
+hse08.mk2$ag215g2 <- NULL
+
+
+hse09.pc <- c("sys1om","dias1om","sex","tenureb","ag215g2","origin","hhsize","addnum","IMD2007",
+              "birthwt","porftvg","GOR07","sys2om","sys3om","dias2om","dias3om")
+hse09.mk2 <- hse09[,hse09.pc]
+colnames(hse09.mk2)[9] <- "imd"
+colnames(hse09.mk2)[12] <- "gor"
+hse09.mk2$year <- 09
+hse09.mk2$aggr <- ifelse(hse09.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse09.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse09.mk2$ag215g2 > 0, 1,0)))
+hse09.mk2$porftvg <- ifelse(hse09.mk2$porftvg > 5, 6, hse09.mk2$porftvg)
+hse09.2 <- -c(which(hse09.mk2$aggr == 0))
+hse09.mk2 <- hse09.mk2[hse09.2,]
+hse09.mk2$ag215g2 <- NULL
+
+
+hse10.pc <- c("sys1om","dias1om","sex","tenureb","ag215g2","origin","hhsize","addnum","imd2007",
+              "birthwt","porftvg","gor1","sys2om","sys3om","dias2om","dias3om")
+hse10.mk2 <- hse10[,hse10.pc]
+colnames(hse10.mk2)[9] <- "imd"
+colnames(hse10.mk2)[12] <- "gor"
+hse10.mk2$year <- 10
+hse10.mk2$aggr <- ifelse(hse10.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse10.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse10.mk2$ag215g2 > 0, 1,0)))
+hse10.mk2$porftvg <- ifelse(hse10.mk2$porftvg > 5, 6, hse10.mk2$porftvg)
+hse10.2 <- -c(which(hse10.mk2$aggr == 0))
+hse10.mk2 <- hse10.mk2[hse10.2,]
+hse10.mk2$ag215g2 <- NULL
+
+
+hse11.pc <- c("sys1om","dias1om","Sex","tenureb","ag215g2","Origin","HHSize","addnum","qimd",
+              "BirthWt","porftvg","gor1","sys2om","sys3om","dias2om","dias3om")
+hse11.mk2 <- hse11[,hse11.pc]
+colnames(hse11.mk2)[3] <- "sex"
+colnames(hse11.mk2)[6] <- "origin"
+colnames(hse11.mk2)[7] <- "hhsize"
+colnames(hse11.mk2)[9] <- "imd"
+colnames(hse11.mk2)[10] <- "birthwt"
+colnames(hse11.mk2)[12] <- "gor"
+hse11.mk2$year <- 11
+hse11.mk2$aggr <- ifelse(hse11.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse11.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse11.mk2$ag215g2 > 0, 1,0)))
+hse11.mk2$porftvg <- ifelse(hse11.mk2$porftvg > 5, 6, hse11.mk2$porftvg)
+hse11.2 <- -c(which(hse11.mk2$aggr == 0))
+hse11.mk2 <- hse11.mk2[hse11.2,]
+hse11.mk2$ag215g2 <- NULL
+
+
+hse12.pc <- c("sys1om","dias1om","Sex","tenureb","ag215g2","Origin","HHSize","Addnum","qimd",
+              "BirthWt",                 "gor1","sys2om","sys3om","dias2om","dias3om")
+hse12.mk2 <- hse12[,hse12.pc]
+colnames(hse12.mk2)[3] <- "sex"
+colnames(hse12.mk2)[6] <- "origin"
+colnames(hse12.mk2)[7] <- "hhsize"
+colnames(hse12.mk2)[8] <- "addnum"
+colnames(hse12.mk2)[9] <- "imd"
+colnames(hse12.mk2)[10] <- "birthwt"
+colnames(hse12.mk2)[11] <- "gor"
+hse12.mk2$porftvg <- NA
+hse12.mk2$year <- 12
+hse12.mk2$aggr <- ifelse(hse12.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse12.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse12.mk2$ag215g2 > 0, 1,0)))
+hse12.mk2$porftvg <- ifelse(hse12.mk2$porftvg > 5, 6, hse12.mk2$porftvg)
+hse12.2 <- -c(which(hse12.mk2$aggr == 0))
+hse12.mk2 <- hse12.mk2[hse12.2,]
+hse12.mk2$ag215g2 <- NULL
+
+
+hse13.pc <- c("SYS1OM","DIAS1OM","Sex","tenureb","ag215g2","Origin","HHSize","Addnum","qimd",
+              "BirthWt","porftvg","gor1","SYS2OM","SYS3OM","DIAS2OM","DIAS3OM")
+hse13.mk2 <- hse13[,hse13.pc]
+colnames(hse13.mk2)[1] <- "sys1om"
+colnames(hse13.mk2)[2] <- "dias1om"
+colnames(hse13.mk2)[3] <- "sex"
+colnames(hse13.mk2)[6] <- "origin"
+colnames(hse13.mk2)[7] <- "hhsize"
+colnames(hse13.mk2)[8] <- "addnum"
+colnames(hse13.mk2)[9] <- "imd"
+colnames(hse13.mk2)[10] <- "birthwt"
+colnames(hse13.mk2)[12] <- "gor"
+colnames(hse13.mk2)[13] <- "sys2om"
+colnames(hse13.mk2)[14] <- "sys3om"
+colnames(hse13.mk2)[15] <- "dias2om"
+colnames(hse13.mk2)[16] <- "dias3om"
+hse13.mk2$year <- 13
+hse13.mk2$aggr <- ifelse(hse13.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse13.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse13.mk2$ag215g2 > 0, 1,0)))
+hse13.mk2$porftvg <- ifelse(hse13.mk2$porftvg > 5, 6, hse13.mk2$porftvg)
+hse13.2 <- -c(which(hse13.mk2$aggr == 0))
+hse13.mk2 <- hse13.mk2[hse13.2,]
+hse13.mk2$ag215g2 <- NULL
+
+
+hse14.pc <- c("SYS1OM","DIAS1OM","Sex","tenureb","ag215g2","origin2","HHSize9","Addnum","qimd",
+              "BirthWt","PorFV05","gor1","SYS2OM","SYS3OM","DIAS2OM","DIAS3OM")
+hse14.mk2 <- hse14[,hse14.pc]
+colnames(hse14.mk2)[1] <- "sys1om"
+colnames(hse14.mk2)[2] <- "dias1om"
+colnames(hse14.mk2)[3] <- "sex"
+colnames(hse14.mk2)[6] <- "origin"
+colnames(hse14.mk2)[7] <- "hhsize"
+colnames(hse14.mk2)[8] <- "addnum"
+colnames(hse14.mk2)[9] <- "imd"
+colnames(hse14.mk2)[10] <- "birthwt"
+colnames(hse14.mk2)[11] <- "porftvg"
+colnames(hse14.mk2)[12] <- "gor"
+colnames(hse14.mk2)[13] <- "sys2om"
+colnames(hse14.mk2)[14] <- "sys3om"
+colnames(hse14.mk2)[15] <- "dias2om"
+colnames(hse14.mk2)[16] <- "dias3om"
+hse14.mk2$year <- 14
+hse14.mk2$aggr <- ifelse(hse14.mk2$ag215g2 > 4 , 3,
+                         ifelse(hse14.mk2$ag215g2 > 3, 2, 
+                                ifelse(hse14.mk2$ag215g2 > 0, 1,0)))
+hse14.2 <- -c(which(hse14.mk2$aggr == 0))
+hse14.mk2 <- hse14.mk2[hse14.2,]
+hse14.mk2$ag215g2 <- NULL
+
+
+hse15.pc <- c("SYS1OM","DIAS1OM","Sex","tenureb","Ag015g4","origin2","HHSize6","addnum","qimd",
+              "BirthWt","PorFV05b","Gor1","SYS2OM","SYS3OM","DIAS2OM","DIAS3OM")
+hse15.mk2 <- hse15[,hse15.pc]
+colnames(hse15.mk2)[1] <- "sys1om"
+colnames(hse15.mk2)[2] <- "dias1om"
+colnames(hse15.mk2)[3] <- "sex"
+colnames(hse15.mk2)[6] <- "origin"
+colnames(hse15.mk2)[7] <- "hhsize"
+colnames(hse15.mk2)[9] <- "imd"
+colnames(hse15.mk2)[10] <- "birthwt"
+colnames(hse15.mk2)[11] <- "porftvg"
+colnames(hse15.mk2)[12] <- "gor"
+colnames(hse15.mk2)[13] <- "sys2om"
+colnames(hse15.mk2)[14] <- "sys3om"
+colnames(hse15.mk2)[15] <- "dias2om"
+colnames(hse15.mk2)[16] <- "dias3om"
+hse15.mk2$year <- 15
+hse15.mk2$aggr <- ifelse(hse15.mk2$Ag015g4 > 4 , 3,
+                         ifelse(hse15.mk2$Ag015g4 > 3, 2, 
+                                ifelse(hse15.mk2$Ag015g4 > 0, 1,0)))
+hse15.2 <- -c(which(hse15.mk2$aggr == 0))
+hse15.mk2 <- hse15.mk2[hse15.2,]
+hse15.mk2$Ag015g4 <- NULL
+```
+
+```{r}
+###############################      Data Preparation  --  Merge (Row bind) the datasets      ##############################
+
+hse.mk20 <- rbind(hse05.mk2, hse06.mk2)
+hse.mk20 <- rbind(hse.mk20, hse07.mk2)
+hse.mk20 <- rbind(hse.mk20, hse08.mk2)
+hse.mk20 <- rbind(hse.mk20, hse09.mk2)
+hse.mk20 <- rbind(hse.mk20, hse10.mk2)
+hse.mk20 <- rbind(hse.mk20, hse11.mk2)
+hse.mk20 <- rbind(hse.mk20, hse12.mk2)
+hse.mk20 <- rbind(hse.mk20, hse13.mk2)
+hse.mk20 <- rbind(hse.mk20, hse14.mk2)
+hse.mk20 <- rbind(hse.mk20, hse15.mk2)
+```
+
+```{r}
+############      Data Preparation  --  Convert the inapplicable cases to NAs & Keep only the valid BP measurements     #######
+
+#       As some of the observations are recorded as negative number or huge number in inapplicable cases in the datasets
+#       This step ensures those cases are marked as NAs rather than continuous number
+
+colnames(hse.mk20)
+range(hse.mk20$sex)
+range(hse.mk20$tenureb)
+range(hse.mk20$origin)
+range(hse.mk20$hhsize)
+range(hse.mk20$addnum)
+range(hse.mk20$imd)
+range(hse.mk20$birthwt, na.rm = T)
+range(hse.mk20$porftvg, na.rm = T)
+range(hse.mk20$gor)
+range(hse.mk20$year)
+range(hse.mk20$aggr)
+range(hse.mk20$sys1om)
+range(hse.mk20$sys2om)
+range(hse.mk20$sys3om)
+range(hse.mk20$dias1om)
+range(hse.mk20$dias2om)
+range(hse.mk20$dias3om)
+# tenureb, origin, birthwt, porftvg, & six BP measurements has negative values (inapplicable cases)
+# birthwt, porftvg has NA values originally which require to be imputed later.
+
+
+#       Covert the inapplicable cases to NAs
+
+hse.mk20$tenureb <- ifelse(hse.mk20$tenureb < 0, NA, hse.mk20$tenureb)
+hse.mk20$origin <- ifelse(hse.mk20$origin < 0, NA, hse.mk20$origin)
+hse.mk20$birthwt <- ifelse(hse.mk20$birthwt < 0, NA, hse.mk20$birthwt)
+hse.mk20$porftvg <- ifelse(hse.mk20$porftvg < 0, NA, hse.mk20$porftvg)
+
+#      Keep only the valid measurements
+
+hse.mk20.pc <- -c(which(hse.mk20$sys1om < 0 | hse.mk20$sys1om > 200 |
+                        hse.mk20$sys2om < 0 | hse.mk20$sys2om > 200 |
+                        hse.mk20$sys3om < 0 | hse.mk20$sys3om > 200 | 
+                        hse.mk20$dias1om < 0 | hse.mk20$dias1om > 200 | 
+                        hse.mk20$dias2om < 0 | hse.mk20$dias2om > 200 |
+                        hse.mk20$dias3om < 0 | hse.mk20$dias3om > 200))
+hse.mk20 <- hse.mk20[hse.mk20.pc,]
+
+#     Last check
+
+colnames(hse.mk20)
+range(hse.mk20$sex)
+range(hse.mk20$tenureb, na.rm = T)
+range(hse.mk20$origin, na.rm = T)
+range(hse.mk20$hhsize)
+range(hse.mk20$addnum)
+range(hse.mk20$imd)
+range(hse.mk20$birthwt, na.rm = T)
+range(hse.mk20$porftvg, na.rm = T)
+range(hse.mk20$gor)
+range(hse.mk20$year)
+range(hse.mk20$aggr)
+range(hse.mk20$sys1om, na.rm = T)
+range(hse.mk20$sys2om, na.rm = T)
+range(hse.mk20$sys3om, na.rm = T)
+range(hse.mk20$dias1om, na.rm = T)
+range(hse.mk20$dias2om, na.rm = T)
+range(hse.mk20$dias3om, na.rm = T)
+```
+
+```{r}
+###############################      Data Preparation  --  Average the BP for each row      ##############################
+
+#       Looking into the distribution of BP measurements
+
+x1 <- hse.mk20$sys1om
+range(hse.mk20$sys1om, na.rm = T)
+hist(x1, freq = FALSE)
+
+x2 <- hse.mk20$sys2om
+range(hse.mk20$sys2om, na.rm = T)
+hist(x2, freq = FALSE)
+
+x3 <- hse.mk20$sys3om
+range(hse.mk20$sys3om, na.rm = T)
+hist(x3, freq = FALSE)
+
+x4 <- hse.mk20$dias1om
+range(hse.mk20$dias1om, na.rm = T)
+hist(x4, freq = FALSE)
+
+x5 <- hse.mk20$dias2om
+range(hse.mk20$dias2om, na.rm = T)
+hist(x5, freq = FALSE)
+
+x6 <- hse.mk20$dias3om
+range(hse.mk20$dias3om, na.rm = T)
+hist(x6, freq = FALSE)
+
+#       Get the average of the diastolic and systolic measurements for each row
+
+hse.mk20$sysavg <- NA 
+hse.mk20$diaavg <- NA
+
+ for ( i in 1 : dim(hse.mk20)[1] ) {
+      hse.mk20$sysavg[i] <- (hse.mk20$sys1om[i] + hse.mk20$sys2om[i] + hse.mk20$sys3om[i]) / 3
+      hse.mk20$diaavg[i] <- (hse.mk20$dias1om[i] + hse.mk20$dias2om[i] + hse.mk20$dias3om[i]) / 3
+ }
+hse.mk20$sys1om <- NULL
+hse.mk20$sys2om <- NULL
+hse.mk20$sys3om <- NULL
+hse.mk20$dias1om <- NULL
+hse.mk20$dias2om <- NULL
+hse.mk20$dias3om <- NULL
+```
+
+```{r}
+#############################      Data Preparation  --  Get the hypertensive group      ############################
+
+#   Calculate .95 quantiles of the systolic and diastolic bp for each of the three age groups, 
+#   if the child's systolic / diastolic bp is higher than .95 age group's threshold, 
+#   the child is classified as hypertensive
+
+
+# systolic bp comparison for age group 1
+hse.mk20$sys.hyper1 <- NA
+hse.mk20$sys.hyper1 <- ifelse(hse.mk20$aggr == 1, hse.mk20$sysavg, NA)
+range(hse.mk20$sys.hyper1, na.rm = T)
+quantile(hse.mk20$sys.hyper1, .95, na.rm = T)
+hse.mk20$sys.hyper1.mk <- NA
+hse.mk20$sys.hyper1.mk <- ifelse(hse.mk20$sys.hyper1 >= quantile(hse.mk20$sys.hyper1, .95, na.rm = T)[1], 1, 0)
+length(which(hse.mk20$sys.hyper1.mk == 1 ))
+#                               group 2
+hse.mk20$sys.hyper2 <- NA
+hse.mk20$sys.hyper2 <- ifelse(hse.mk20$aggr == 2, hse.mk20$sysavg, NA)
+range(hse.mk20$sys.hyper2, na.rm = T) 
+quantile(hse.mk20$sys.hyper2, .95, na.rm = T)
+hse.mk20$sys.hyper2.mk <- NA
+hse.mk20$sys.hyper2.mk <- ifelse(hse.mk20$sys.hyper2 >= quantile(hse.mk20$sys.hyper2, .95, na.rm = T)[1], 1, 0)
+length(which(hse.mk20$sys.hyper2.mk == 1 ))
+#                               group 3
+hse.mk20$sys.hyper3 <- NA
+hse.mk20$sys.hyper3 <- ifelse(hse.mk20$aggr == 3, hse.mk20$sysavg, NA)
+range(hse.mk20$sys.hyper3, na.rm = T) 
+quantile(hse.mk20$sys.hyper3, .95, na.rm = T)
+hse.mk20$sys.hyper3.mk <- NA
+hse.mk20$sys.hyper3.mk <- ifelse(hse.mk20$sys.hyper3 >= quantile(hse.mk20$sys.hyper3, .95, na.rm = T)[1], 1, 0)
+length(which(hse.mk20$sys.hyper3.mk == 1 ))
+
+# diastolic bp comparison for age group 1
+hse.mk20$dia.hyper1 <- NA
+hse.mk20$dia.hyper1 <- ifelse(hse.mk20$aggr == 1, hse.mk20$diaavg, NA)
+range(hse.mk20$dia.hyper1, na.rm = T) 
+quantile(hse.mk20$dia.hyper1, .95, na.rm = T)
+hse.mk20$dia.hyper1.mk <- NA
+hse.mk20$dia.hyper1.mk <- ifelse(hse.mk20$dia.hyper1 >= quantile(hse.mk20$dia.hyper1, .95, na.rm = T)[1], 1, 0)
+length(which(hse.mk20$dia.hyper1.mk == 1 ))
+#                               group 2
+hse.mk20$dia.hyper2 <- NA
+hse.mk20$dia.hyper2 <- ifelse(hse.mk20$aggr == 2, hse.mk20$diaavg, NA)
+range(hse.mk20$dia.hyper2, na.rm = T) 
+quantile(hse.mk20$dia.hyper2, .95, na.rm = T)
+hse.mk20$dia.hyper2.mk <- NA
+hse.mk20$dia.hyper2.mk <- ifelse(hse.mk20$dia.hyper2 >= quantile(hse.mk20$dia.hyper2, .95, na.rm = T)[1], 1, 0)
+length(which(hse.mk20$dia.hyper2.mk == 1 ))
+#                               group 3
+hse.mk20$dia.hyper3 <- NA
+hse.mk20$dia.hyper3 <- ifelse(hse.mk20$aggr == 3, hse.mk20$diaavg, NA)
+range(hse.mk20$dia.hyper3, na.rm = T) 
+quantile(hse.mk20$dia.hyper3, .95, na.rm = T)
+hse.mk20$dia.hyper3.mk <- NA
+hse.mk20$dia.hyper3.mk <- ifelse(hse.mk20$dia.hyper3 >= quantile(hse.mk20$dia.hyper3, .95, na.rm = T)[1], 1, 0)
+length(which(hse.mk20$dia.hyper3.mk == 1 ))
+
+
+#       Get the hypertensive group
+#   if the child is classified as hypertensive by one of the age groups'threshold
+#   then the child is hypertensive
+
+hse.mk20$sys.hyper1.mk <- ifelse(is.na(hse.mk20$sys.hyper1.mk), 0, hse.mk20$sys.hyper1.mk)
+hse.mk20$sys.hyper2.mk <- ifelse(is.na(hse.mk20$sys.hyper2.mk), 0, hse.mk20$sys.hyper2.mk)
+hse.mk20$sys.hyper3.mk <- ifelse(is.na(hse.mk20$sys.hyper3.mk), 0, hse.mk20$sys.hyper3.mk)
+hse.mk20$dia.hyper1.mk <- ifelse(is.na(hse.mk20$dia.hyper1.mk), 0, hse.mk20$dia.hyper1.mk)
+hse.mk20$dia.hyper2.mk <- ifelse(is.na(hse.mk20$dia.hyper2.mk), 0, hse.mk20$dia.hyper2.mk)
+hse.mk20$dia.hyper3.mk <- ifelse(is.na(hse.mk20$dia.hyper3.mk), 0, hse.mk20$dia.hyper3.mk)
+
+hse.mk20$hyper <- NA
+hse.mk20$hyper <- ifelse(hse.mk20$sys.hyper1.mk == 1 | hse.mk20$sys.hyper2.mk == 1 | hse.mk20$sys.hyper3.mk == 1 
+                       | hse.mk20$dia.hyper1.mk == 1 | hse.mk20$dia.hyper2.mk == 1 | hse.mk20$dia.hyper3.mk == 1 ,1, 0) 
+length(which(hse.mk20$hyper == 1 ))
+
+#       Delete used rows
+hse.mk20$sys.hyper1 <- NULL
+hse.mk20$sys.hyper1.mk <- NULL
+hse.mk20$sys.hyper2 <- NULL
+hse.mk20$sys.hyper2.mk <- NULL
+hse.mk20$sys.hyper3 <- NULL
+hse.mk20$sys.hyper3.mk <- NULL
+
+hse.mk20$dia.hyper1 <- NULL
+hse.mk20$dia.hyper1.mk <- NULL
+hse.mk20$dia.hyper2 <- NULL
+hse.mk20$dia.hyper2.mk <- NULL
+hse.mk20$dia.hyper3 <- NULL
+hse.mk20$dia.hyper3.mk <- NULL
+```
+
+```{r}
+#############################      Data Preparation  --  Multiple Imputation     ############################
+
+hse.mk50 <- hse.mk20
+
+# Multiple imputation
+set.seed(1)
+hse.mk50.mi <- aregImpute(~ hyper + sex + tenureb + origin + hhsize + addnum + imd + birthwt + 
+                            porftvg + gor + aggr + year + sysavg + diaavg, data = hse.mk50, n.impute = 50, nk=0)
+# Retrieve the imputed values
+hse.mk50.mi.r <- impute.transcan(hse.mk50.mi, data = hse.mk50, imputation=1, list.out=TRUE, pr=FALSE, check=FALSE)
+
+# Arrange the columns accordingly
+hse.mk60 <- hse.mk50
+hse.mk60$tenureb <- hse.mk50.mi.r$tenureb
+hse.mk60$origin <- hse.mk50.mi.r$origin
+hse.mk60$birthwt <- hse.mk50.mi.r$birthwt
+hse.mk60$porftvg <- hse.mk50.mi.r$porftvg
+```
+
+```{r}
+####################   Data Preparation  --  Subset the hypertensive group for the clustering analysis      ##################
+
+#       hse.mk60 is the dataset for all children with regardless of whether they are hypertensive or not
+#       hse.mk85 contains only the hypertensive children
+
+hse.mk60.pc <- -c(which(hse.mk60$hyper == 0))
+hse.mk85 <- hse.mk60[hse.mk60.pc,]
+hse.mk85$hyper <- NULL
+hse.mk85$sysavg <- NULL
+hse.mk85$diaavg <- NULL
+hse.mk85$sysavg <- NULL
+hse.mk85$diaavg <- NULL
+```
+
+
+##############
+#             Part 2/4: Current Hypertension Phenomenon Plotting
+##############
+
+```{r}
+##################################       Current Hypertension Phenomenon Plotting       ######################################
+
+prop <- data.frame(table(hse.mk60$year[hse.mk60$hyper == 1]))
+colnames(prop)[1] <- "year"
+colnames(prop)[2] <- "number"
+
+prop$group <- ifelse(prop$year %in% c(5:8), 1, 2)
+
+ggplot(data = prop, mapping = aes(x = year, y = number, group = group)) + 
+  geom_line(color="#E69F00") +
+  geom_point(color="#E69F00", size=2) +
+  labs(x="Number of Hypertensive Children",y="Years",title = "Number of Hypertensive Children across Years") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+##############
+#             Part 3/4: Principal Components Analysis (PCA) & Correspondence analysis (CORA) 
+##############
+
+```{r}
+################################       Pairwise Correlations & Correlation Matrix       ################################
+
+# Plot the pairwise correlations
+chart.Correlation(hse.mk85, histogram=TRUE, pch=19)
+
+# and the correlation matrix:
+cor(hse.mk85)
+```
+
+```{r}
+##################################       Principal Components Analysis (PCA)       ######################################
+
+# The eigen values (explained variances) and the scree plot:
+pca <-  princomp(na.omit(hse.mk85), cor = T, scores = TRUE)
+summary(pca)
+fviz_eig(pca)
+# Overall, it seems that we'll need two or three components to account for the variation in the data. 
+
+# Variables' contribution to the principal components
+pca.df <- data.frame(pca$loadings[,1:2])
+ggplot(pca.df,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(pca.df)),hjust=0, vjust=0)
+
+# Dimension Reduction
+biplot(pca, scale = 0)
+prediction <- data.frame(predict(pca))
+ggplot(prediction,aes(x = Comp.1, y = Comp.2)) + geom_point() + geom_text(aes(label=rownames(prediction)),hjust=0, vjust=0)
+```
+
+```{r}
+#####################################      Correspondence Analysis (CORA)     ############################################
+
+cora <- ca(na.omit(hse.mk85))
+summary(cora)
+plot(cora, contrib = "absolute")
+plot(cora, mass = TRUE, contrib = "absolute", map = "rowgreen", arrows = c(FALSE, TRUE))
+
+# The first dimension explains 44% of the inertia. 
+# The 2nd dimension explains a further 21.4%. 
+# The first two dimensions seem to explain much of the data. 
+```
+
+##############
+#             Part 4/4: The Effect of Urban Deprivation  --  Propensity Analysis
+##############
+
+```{r}
+############################################      Propensity Analysis      ##############################################
+
+# Covert the ordinal scale of treatment variable (imd) to binary scale for computing the propensity scores
+hse.mk90 <- hse.mk60
+
+hse.mk90$imd <- ifelse(hse.mk90$imd == 1, 1, 
+                       ifelse(hse.mk90$imd == 5, 0, NA))
+table(hse.mk90$imd)
+hse.mk90 <- hse.mk90[complete.cases(hse.mk90), ]
+
+# Compute the Propensity scores
+reg <- glm(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year + hyper + sysavg + diaavg, 
+                                                family=binomial, data=hse.mk90)
+hse.mk90$fit.value <- fitted.values(reg)
+
+
+
+# Propensity Scores Matching & Average Treatment Effect on Treated
+set.seed(11)
+matching.vars <- cbind(hse.mk90$fit.value)
+psm <- Match(Y=hse.mk90$hyper, Tr=hse.mk90$imd, X=matching.vars, Weight = 2, ties = F)
+summary.Match(psm)
+#    1  --   Estimate effect of deprivation on hypertention (insignificant) 
+# Balance test
+MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year, 
+             match.out=psm, data=hse.mk90)
+
+
+
+#  Regression with a matched dataset  --  this time using ordinal scale of treatment (imd)
+#  Create a new dataset after matching 
+hse.mk.FX <- rbind(hse.mk60[psm$index.control,],hse.mk60[psm$index.treated,])
+
+summary(lm(hyper ~ factor(imd),data=hse.mk.FX))
+#    2  --   Balance our datasets for more accurate measure & conduct factor regression analysis
+#            Estimating deprivation on a ordinal scales (significant) 
+#       This shows that regression with a matched dataset is a good alternative to matching
+
+summary(lm(hyper ~ factor(imd) + sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year + sysavg + diaavg
+           ,data=hse.mk.FX))
+#    3  --   However, if we control other variables, deprivation is not significant predictors 
+
+
+```
+
+
+
