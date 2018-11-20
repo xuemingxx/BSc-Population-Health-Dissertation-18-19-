@@ -632,7 +632,7 @@ set.seed(11)
 matching.vars <- cbind(hse.mk90$fit.value)
 psm <- Match(Y=hse.mk90$hyper, Tr=hse.mk90$imd, X=matching.vars, Weight = 2, ties = F)
 summary.Match(psm)
-#    1  --   Estimate effect of deprivation on hypertention (insignificant) 
+#    1  --   Estimate effect of deprivation on hypertention (significant) 
 # Balance test
 MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year, 
              match.out=psm, data=hse.mk90)
