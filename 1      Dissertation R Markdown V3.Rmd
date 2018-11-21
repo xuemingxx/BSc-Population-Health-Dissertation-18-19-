@@ -321,7 +321,7 @@ hse.mk20 <- rbind(hse.mk20, hse15.mk2)
 ```{r}
 ############      Data Preparation  --  Convert the missing values to NAs & Keep only the valid BP measurements     #######
 
-#       As some of the observations are recorded as negative number or huge number in inapplicable cases in the datasets
+#       As some of the missing observations are recorded as negative number or huge number in the datasets
 #       This step ensures those cases are marked as NAs rather than continuous number
 
 colnames(hse.mk20)
@@ -342,7 +342,7 @@ range(hse.mk20$sys3om)
 range(hse.mk20$dias1om)
 range(hse.mk20$dias2om)
 range(hse.mk20$dias3om)
-# tenureb, origin, birthwt, porftvg, & six BP measurements has negative values (inapplicable cases)
+# tenureb, origin, birthwt, porftvg, & six BP measurements has negative/huge values
 # birthwt, porftvg has NA values originally which require to be imputed later.
 
 
