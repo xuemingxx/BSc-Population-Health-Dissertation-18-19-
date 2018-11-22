@@ -342,8 +342,8 @@ range(hse.mk20$sys3om)
 range(hse.mk20$dias1om)
 range(hse.mk20$dias2om)
 range(hse.mk20$dias3om)
-# tenureb, origin, birthwt, porftvg, & six BP measurements has negative/huge values
-# birthwt, porftvg has NA values originally which require to be imputed later.
+# tenureb, origin, birthwt, porftvg, & six BP measurements have negative/huge values
+# birthwt, porftvg have NA values originally which require to be imputed later.
 
 
 #       Covert the missing values to NAs
@@ -435,7 +435,7 @@ hse.mk20$dias3om <- NULL
 ```{r}
 #############################      Data Preparation  --  Get the hypertensive group      ############################
 
-#   Calculate .95 quantiles of the systolic and diastolic bp for each of the three age groups, 
+#   Calculate .95 quantiles of the systolic and diastolic bp for each of age group, 
 #   if the child's systolic / diastolic bp is higher than .95 age group's threshold, 
 #   the child is classified as hypertensive
 
@@ -643,11 +643,12 @@ MatchBalance(imd ~ sex + tenureb + origin + hhsize + addnum + birthwt + porftvg 
 #  Create a new dataset after matching 
 hse.mk.FX <- rbind(hse.mk90[psm$index.control,],hse.mk90[psm$index.treated,])
 summary(lm(hyper ~ imd,data=hse.mk.FX))
-#    2  --   Balance our datasets for more accurate measure & conduct factor regression analysis
+#    2  --   Balance our datasets for more accurate measure & conduct regression analysis
 #            Estimate effect of deprivation on hypertention (significant) 
 
 summary(lm(hyper ~ imd + sex + tenureb + origin + hhsize + addnum + birthwt + porftvg + gor + aggr + year,data=hse.mk.FX))
-#    3  --   However, if we control other variables, deprivation is not very significant predictors 
+#    3  --   However, if we control other variables, deprivation is not very important predictors 
+#            but still significant in explaining hypertension disparities between urban and rural areas.
 
 ```
 
