@@ -555,7 +555,7 @@ prop$group <- ifelse(prop$year %in% c(5:8), 1, 2)
 ggplot(data = prop, mapping = aes(x = year, y = number, group = group)) + 
   geom_line(color="#E69F00") +
   geom_point(color="#E69F00", size=2) +
-  labs(x="Number of Hypertensive Children",y="Years",title = "Number of Hypertensive Children across Years") +
+  labs(x="Years",y="Number of Hypertensive Children",title = "Number of Hypertensive Children across Years") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
