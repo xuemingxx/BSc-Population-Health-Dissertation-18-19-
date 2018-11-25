@@ -102,7 +102,7 @@ colnames(hse05.mk2)[6] <- "origin"
 colnames(hse05.mk2)[9] <- "imd"
 hse05.mk2$year <- 05
 hse05.mk2$aggr <- ifelse(hse05.mk2$age > 10 & hse05.mk2$age < 16 , 3,
-                         ifelse(hse05.mk2$age > 4 & hse05.mk2$age < 14 , 2, 
+                         ifelse(hse05.mk2$age > 4 & hse05.mk2$age < 11 , 2, 
                                 ifelse(hse05.mk2$age > 1 & hse05.mk2$age < 5 , 1, 0)))
 hse05.mk2$porftvg <- ifelse(hse05.mk2$porftvg > 5, 6, hse05.mk2$porftvg)
 hse05.2 <- -c(which(hse05.mk2$aggr == 0))
